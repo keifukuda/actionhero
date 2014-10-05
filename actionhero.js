@@ -83,7 +83,7 @@ actionhero.prototype.initialize = function(params, callback){
   orderedInitializers['_projectInitializers'] = function(next){
 
     var projectInitializers = {};
-  
+
     self.api.config.general.paths.initializer.forEach(function(initPath){
       if(path.resolve(initPath) != path.resolve(__dirname + '/initializers')){
         var localInitializerPath = path.resolve(initPath);
@@ -95,7 +95,7 @@ actionhero.prototype.initialize = function(params, callback){
               var initializer = f.split('.')[0];
               var fileParts = file.split('.');
               var ext = fileParts[(fileParts.length - 1)];
-              if(ext === 'js'){
+              if(ext === 'js' || ext === 'coffee'){
                 if(require.cache[require.resolve(file)] !== null){
                   delete require.cache[require.resolve(file)];
                 }

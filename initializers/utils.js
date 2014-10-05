@@ -54,7 +54,7 @@ var utils = function(api, next){
   }
 
   ////////////////////////////////////////////////////////////////////////////
-  // merge two hashes recursively 
+  // merge two hashes recursively
   api.utils.hashMerge = function(a, b, arg){
     var c = {};
     var i;
@@ -182,12 +182,12 @@ var utils = function(api, next){
           } else if(stats.isFile()){
             var fileParts = file.split('.');
             var ext = fileParts[(fileParts.length - 1)];
-            if(ext === extension){ results.push(fullFilePath); }
+            if(ext === extension || ext === 'coffee'){ results.push(fullFilePath); }
           }
         }
       });
     }
-    
+
     return results.sort();
   }
 
@@ -207,7 +207,7 @@ var utils = function(api, next){
       if(keys.length < 1){ return false }
       if(keys[0] !== '0'){ return false }
       if(keys[(keys.length - 1)] !== String(keys.length - 1)){ return false }
-      
+
       var arr = [];
       for(var i in keys){
         var key = keys[i];
@@ -252,7 +252,7 @@ var utils = function(api, next){
   }
 
   ////////////////////////////////////////////////////////////////////////////
-  // parse an IPv6 address 
+  // parse an IPv6 address
   // https://github.com/evantahler/actionhero/issues/275 && https://github.com/nullivex
   api.utils.parseIPv6URI = function(addr){
     var host = '::1'
