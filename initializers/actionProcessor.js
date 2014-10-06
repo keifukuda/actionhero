@@ -42,24 +42,24 @@ var actionProcessor = function(api, next){
   api.actionProcessor.prototype.completeAction = function(status, toRender, actionDomain){
     var self = this;
     if(actionDomain != null){ actionDomain.exit(); }
-    var error = null
+    // var error = null
 
-    if(status == 'server_shutting_down'){
-      error = api.config.errors.serverShuttingDown();
-    }else if(status == 'too_many_requests'){
-      error = api.config.errors.tooManyPendingActions();
-    }else if(status == 'unknown_action'){
-      error = api.config.errors.unknownAction(self.connection.action);
-    }else if(status == 'unsupported_server_type'){
-      error = api.config.errors.unsupportedServerType(self.connection.type);
-    }else if(status == 'missing_params'){
-      error = api.config.errors.missingParams(self.missingParams) ;
-    }
+    // if(status == 'server_shutting_down'){
+    //   error = api.config.errors.serverShuttingDown();
+    // }else if(status == 'too_many_requests'){
+    //   error = api.config.errors.tooManyPendingActions();
+    // }else if(status == 'unknown_action'){
+    //   error = api.config.errors.unknownAction(self.connection.action);
+    // }else if(status == 'unsupported_server_type'){
+    //   error = api.config.errors.unsupportedServerType(self.connection.type);
+    // }else if(status == 'missing_params'){
+    //   error = api.config.errors.missingParams(self.missingParams) ;
+    // }
 
-    if(error !== null){
-      if(typeof error === "string") self.connection.error = new Error( error );
-      else self.connection.error = error;
-    }
+    // if(error !== null){
+    //   if(typeof error === "string") self.connection.error = new Error( error );
+    //   else self.connection.error = error;
+    // }
     if(typeof api.actions.preCompleteAction === 'function') {
       api.actions.preCompleteAction(status, self.connection, self.actionTemplate);
     }
