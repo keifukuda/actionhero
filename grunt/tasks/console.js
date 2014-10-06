@@ -6,9 +6,11 @@ module.exports = function(grunt) {
     var done = this.async();
     grunt.startActionhero(function(api, actionhero){
 
+      var prompt = '[ AH::' + api.env + ' ] >> ';
+
       // note this REPL will not run _start commands, only the intilizers
       var r = repl.start({
-        prompt: '',
+        prompt: prompt,
         useGlobal: false
       });
 
@@ -17,8 +19,6 @@ module.exports = function(grunt) {
       });
 
       r.outputStream.write('*** STARTING ACTIONHERO REPL ***\r\n\r\n');
-
-      r.prompt = '[ AH::' + api.env + ' ] >> ';
 
       for(var i in api.config.servers){
         api.config.servers[i].enabled = false;
@@ -32,7 +32,7 @@ module.exports = function(grunt) {
       actionhero.start(function(){
         r.outputStream.write('\r\n\r\n');
         r.outputStream.write('*** REPL READY ***\r\n\r\n');
-        r.outputStream.write(r.prompt);
+        r.outputStream.write(prompt);
       });
 
     }, true);
