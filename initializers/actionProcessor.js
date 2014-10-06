@@ -4,7 +4,7 @@ var async = require('async');
 var actionProcessor = function(api, next){
 
   var duplicateCallbackErrorTimeout = 500;
-  
+
   api.actionProcessor = function(data){
     if(data.connection == null){ throw new Error('data.connection is required') }
     this.connection = this.buildProxyConnection(data.connection);
@@ -60,6 +60,9 @@ var actionProcessor = function(api, next){
       if(typeof error === "string") self.connection.error = new Error( error );
       else self.connection.error = error;
     }
+    if(typeof api.actions.preCompleteAction === 'function') {
+      api.actions.preCompleteAction(status, self.connection, self.actionTemplate);
+    }
     if(self.connection.error instanceof Error){
       self.connection.error = String(self.connection.error);
     }
@@ -93,7 +96,7 @@ var actionProcessor = function(api, next){
     } catch(e){
       stringifiedError = String(self.connection.error)
     }
-    
+
     var filteredParams = {}
     for(var i in self.connection.params){
       if(api.config.general.filteredParams != null && api.config.general.filteredParams.indexOf(i) >= 0){
@@ -113,7 +116,7 @@ var actionProcessor = function(api, next){
 
     self.working = false;
   }
-  
+
   api.actionProcessor.prototype.preProcessAction = function(toProcess, callback){
     var self = this;
     var priorities = [];
@@ -140,7 +143,7 @@ var actionProcessor = function(api, next){
     processors.push(function(){ callback(toProcess) });
     async.series(processors);
   }
-  
+
   api.actionProcessor.prototype.postProcessAction = function(toRender, callback){
     var self = this;
     var priorities = [];
@@ -248,9 +251,9 @@ var actionProcessor = function(api, next){
           }else if(toProcess === true && self.connection.error === null){
             self.actionTemplate.run(api, self.connection, function(connection, toRender){
               callbackCount++;
-              if(callbackCount !== 1){ 
-                callbackCount = 1; 
-                self.duplicateCallbackHandler(actionDomain); 
+              if(callbackCount !== 1){
+                callbackCount = 1;
+                self.duplicateCallbackHandler(actionDomain);
               }else{
                 self.connection = connection;
                 self.postProcessAction(toRender, function(toRender){
