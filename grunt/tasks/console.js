@@ -2,11 +2,9 @@ var repl = require('coffee-script/repl');
 
 module.exports = function(grunt) {
 
-  grunt.registerTask('console', 'get a REPL/console into your application', function(){
+  grunt.registerTask('console', 'Get a REPL/console into your application', function(){
     var done = this.async();
     grunt.startActionhero(function(api, actionhero){
-
-      var prompt = '[ AH::' + api.env + ' ] >> ';
 
       // note this REPL will not run _start commands, only the intilizers
       var r = repl.start({
@@ -19,6 +17,8 @@ module.exports = function(grunt) {
       });
 
       r.outputStream.write('*** STARTING ACTIONHERO REPL ***\r\n\r\n');
+
+      r.prompt = '[ AH::' + api.env + ' ] >> ';
 
       for(var i in api.config.servers){
         api.config.servers[i].enabled = false;

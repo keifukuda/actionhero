@@ -1,5 +1,3 @@
-var fs = require('fs');
-
 var tasks = function(api, next){
 
   api.tasks = {
@@ -19,7 +17,7 @@ var tasks = function(api, next){
 
     loadFile: function(fullFilePath, reload){
       var self = this;
-      if(reload == null){ reload = false }
+      if(!reload){ reload = false }
 
       var loadMessage = function(loadedTaskName){
         api.log('task ' + (reload?'(re)':'') + 'loaded: ' + loadedTaskName + ', ' + fullFilePath, 'debug');
@@ -61,12 +59,11 @@ var tasks = function(api, next){
         'perform': function(){
           var args = Array.prototype.slice.call(arguments);
           var cb = args.pop();
-          var error = null;
-          if(args.length == 0){
+          if(args.length === 0){
             args.push({}); // empty params array
           }
           args.push(
-            function(resp){
+            function(error, resp){
               self.enqueueRecurrentJob(taskName, function(){
                 cb(error, resp);
               });
@@ -82,19 +79,19 @@ var tasks = function(api, next){
       var fail = function(msg){
         api.log(msg + '; exiting.', 'emerg');
       }
-      if(typeof task.name != 'string' || task.name.length < 1){
+      if(typeof task.name !== 'string' || task.name.length < 1){
         fail('a task is missing \'task.name\'');
         return false;
-      } else if(typeof task.description != 'string' || task.description.length < 1){
+      } else if(typeof task.description !== 'string' || task.description.length < 1){
         fail('Task ' + task.name + ' is missing \'task.description\'');
         return false;
-      } else if(typeof task.frequency != 'number'){
+      } else if(typeof task.frequency !== 'number'){
         fail('Task ' + task.name + ' has no frequency');
         return false;
-      } else if(typeof task.queue != 'string'){
+      } else if(typeof task.queue !== 'string'){
         fail('Task ' + task.name + ' has no queue');
         return false;
-      } else if(typeof task.run != 'function'){
+      } else if(typeof task.run !== 'function'){
         fail('Task ' + task.name + ' has no run method');
         return false;
       } else {
@@ -103,20 +100,20 @@ var tasks = function(api, next){
     },
 
     enqueue: function(taskName, params, queue, callback){
-      if(typeof queue === 'function' && callback == null){ callback = queue; queue = this.tasks[taskName].queue; }
-      else if(typeof params === 'function' && callback == null && queue == null){ callback = params; queue = this.tasks[taskName].queue; params = {}; }
+      if(typeof queue === 'function' && callback === undefined){ callback = queue; queue = this.tasks[taskName].queue; }
+      else if(typeof params === 'function' && callback === undefined && queue === undefined){ callback = params; queue = this.tasks[taskName].queue; params = {}; }
       api.resque.queue.enqueue(queue, taskName, params, callback);
     },
 
     enqueueAt: function(timestamp, taskName, params, queue, callback){
-      if(typeof queue === 'function' && callback == null){ callback = queue; queue = this.tasks[taskName].queue; }
-      else if(typeof params === 'function' && callback == null && queue == null){ callback = params; queue = this.tasks[taskName].queue; params = {}; }
+      if(typeof queue === 'function' && callback === undefined){ callback = queue; queue = this.tasks[taskName].queue; }
+      else if(typeof params === 'function' && callback === undefined && queue === undefined){ callback = params; queue = this.tasks[taskName].queue; params = {}; }
       api.resque.queue.enqueueAt(timestamp, queue, taskName, params, callback);
     },
 
     enqueueIn: function(time, taskName, params, queue, callback){
-      if(typeof queue === 'function' && callback == null){ callback = queue; queue = this.tasks[taskName].queue; }
-      else if(typeof params === 'function' && callback == null && queue == null){ callback = params; queue = this.tasks[taskName].queue; params = {}; }
+      if(typeof queue === 'function' && callback === undefined){ callback = queue; queue = this.tasks[taskName].queue; }
+      else if(typeof params === 'function' && callback === undefined && queue === undefined){ callback = params; queue = this.tasks[taskName].queue; params = {}; }
       api.resque.queue.enqueueIn(time, queue, taskName, params, callback);
     },
 
@@ -126,6 +123,10 @@ var tasks = function(api, next){
 
     delDelayed: function(q, taskName, args, callback){
       api.resque.queue.delDelayed(q, taskName, args, callback);
+    },
+
+    scheduledAt: function(q, taskName, args, callback){
+      api.resque.queue.scheduledAt(q, taskName, args, callback);
     },
 
     enqueueRecurrentJob: function(taskName, callback){
@@ -160,12 +161,12 @@ var tasks = function(api, next){
                 loadedTasks.push(taskName);
               }
               started--;
-              if(started == 0 && typeof callback == 'function'){ callback(loadedTasks) }
+              if(started === 0 && typeof callback === 'function'){ callback(loadedTasks) }
             });
           })(taskName)
         }
       }
-      if(started == 0 && typeof callback == 'function'){ callback(loadedTasks) }
+      if(started === 0 && typeof callback === 'function'){ callback(loadedTasks) }
     },
 
     stopRecurrentJob: function(taskName, callback){
@@ -187,23 +188,22 @@ var tasks = function(api, next){
     },
 
     details: function(callback){
-      var self = this;
       var details = {'queues': {}};
       api.resque.queue.queues(function(err, queues){
-        if(err != null){
+        if(err){
           callback(err, null)
         }
-        else if(queues.length == 0){ callback(null, details) }
+        else if(queues.length === 0){ callback(null, details) }
         else {
           var started = 0;
           queues.forEach(function(queue){
             started++;
             api.resque.queue.length(queue, function(err, length){
-              details['queues'][queue] = {
+              details.queues[queue] = {
                 length: length
               }
               started--;
-              if(started == 0){ callback(err, details) }
+              if(started === 0){ callback(err, details) }
             });
           });
         }

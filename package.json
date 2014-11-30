@@ -2,7 +2,7 @@
   "author": "Evan Tahler <evantahler@gmail.com>",
   "name": "actionhero",
   "description": "actionhero.js is a multi-transport API Server with integrated cluster capabilities and delayed tasks",
-  "version": "9.3.1",
+  "version": "9.4.1",
   "homepage": "http://actionherojs.com",
   "repository": {
     "type": "git",
@@ -29,26 +29,27 @@
     "node": ">=0.10.0"
   },
   "dependencies": {
-    "async": "~0.9.0",
-    "browser_fingerprint": "~0.0.5",
-    "coffee-script": "^1.8.0",
-    "fakeredis": "~0.2.0",
-    "formidable": "~1.0.14",
     "grunt": "~0.4.2",
-    "mime": "~1.2.11",
+    "browser_fingerprint": "~0.0.5",
     "node-resque": "~0.9.0",
-    "node-uuid": "~1.4.1",
-    "optimist": "~0.6.1",
-    "primus": "~2.4.0",
+    "async": "~0.9.0",
+    "formidable": "~1.0.14",
+    "mime": "~1.2.11",
     "redis": "~0.12.0",
+    "ws": "~0.5.0",
+    "optimist": "~0.6.1",
+    "winston": "~0.8.1",
+    "node-uuid": "~1.4.1",
+    "fakeredis": "~0.2.0",
+    "primus": "~2.4.0",
     "uglify-js": "~2.4.14",
-    "winston": "0.7.2",
-    "ws": "~0.4.31"
+    "istanbul": "^0.3.2",
+    "coffee-script": "^1.8.0"
   },
   "devDependencies": {
-    "mocha": "~1.21.3",
-    "should": "~4.0.1",
-    "request": "~2.39.0",
+    "mocha": "~2.x",
+    "should": "~4.x",
+    "request": "~2.47.x",
     "redis-sentinel-client": "latest"
   },
   "optionalDependencies": {},
@@ -58,7 +59,7 @@
   "scripts": {
     "postinstall": "echo 'To generate a new actionhero project, run \"node ./node_modules/.bin/actionhero generate\"'",
     "help": "node ./bin/actionhero help",
-    "test": "echo \"** Running with FakeRedis -> `echo $FAKEREDIS` **\" && NODE_ENV=test  node ./node_modules/.bin/mocha",
+    "test": "echo \"** FakeRedis -> `echo $FAKEREDIS`, ActionDomains -> `echo $ACTIONDOMAINS` **\" && NODE_ENV=test node ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha",
     "start": "node ./bin/actionhero"
   },
   "subdomain": "actionhero",

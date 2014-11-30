@@ -1,17 +1,16 @@
-var fs = require('fs');
-
 var routes = function(api, next){
 
   api.routes = {};
   api.routes.routes = {};
-  api.routes.routesFile = api.project_root + '/routes.js'; //deprecated, see github issue #450
+
+  api.routes.verbs = ['get', 'post', 'put', 'patch', 'delete'];
 
   ////////////////////////////////////////////////////////////////////////////
   // route processing for web clients
   api.routes.processRoute = function(connection, pathParts){
-    if(connection.params['action'] == null || typeof api.actions.actions[connection.params['action']] === 'undefined'){
+    if(connection.params.action === undefined || api.actions.actions[connection.params.action] === undefined){
       var method = connection.rawConnection.method.toLowerCase();
-      if(method == 'head'){ method = 'get'; }
+      if(method === 'head'){ method = 'get'; }
       for(var i in api.routes.routes[method]){
         var route = api.routes.routes[method][i];
         var match = api.routes.matchURL(pathParts, route.path);
@@ -25,7 +24,7 @@ var routes = function(api, next){
               // malformed URL
             }
           }
-          connection.params['action'] = route.action;
+          connection.params.action = route.action;
           break;
         }
       }
@@ -38,10 +37,10 @@ var routes = function(api, next){
     var regexp = '';
     var variable = '';
     
-    if(matchParts[0] == ''){ matchParts.splice(0, 1) }
-    if(matchParts[(matchParts.length - 1)] == ''){ matchParts.pop() }
+    if(matchParts[0] === ''){ matchParts.splice(0, 1) }
+    if(matchParts[(matchParts.length - 1)] === ''){ matchParts.pop() }
     
-    if(matchParts.length != pathParts.length){
+    if(matchParts.length !== pathParts.length){
       return response;
     }
 
@@ -56,13 +55,13 @@ var routes = function(api, next){
         variable = part.replace(':', '').split('(')[0];
         regexp = part.split('(')[1];
         var matches = pathParts[i].match(new RegExp(regexp.substring(0, regexp.length - 1), 'g'));
-        if(matches != null){
+        if(matches){
           response.params[variable] = pathParts[i];
         } else {
           return response;
         }
       } else {
-        if(pathParts[i] == null || pathParts[i].toLowerCase() != matchParts[i].toLowerCase()){
+        if(pathParts[i] === null || pathParts[i] === undefined || pathParts[i].toLowerCase() !== matchParts[i].toLowerCase()){
           return response;
         }
       }
@@ -77,33 +76,25 @@ var routes = function(api, next){
     var counter = 0;
     api.routes.routes = { 'get': [], 'post': [], 'put': [], 'patch' : [], 'delete': [] };
 
-    if(rawRoutes == null){
-      //depricated, see github issue #450
-      if(fs.existsSync(api.routes.routesFile)){
-        api.log('Using the routes.js in your project root is depricated.', 'warning')
-        delete require.cache[require.resolve(api.routes.routesFile)];
-        rawRoutes = require(api.routes.routesFile).routes;
+    if(!rawRoutes){
+      if(api.config.routes){
+        rawRoutes = api.config.routes;
       }
     }
 
+    var v, verb;
     for(var i in rawRoutes){
       var method = i.toLowerCase();
       for(var j in rawRoutes[i]){
         var route = rawRoutes[i][j];
-        if(method == 'all'){
-          ['get', 'post', 'put', 'patch', 'delete'].forEach(function(verb){
+        if(method === 'all'){
+          for(v in api.routes.verbs){
+            verb = api.routes.verbs[v];
             api.routes.routes[verb].push({ path: route.path, action: route.action });
-          });
+          }
         } else {
           api.routes.routes[method].push({ path: route.path, action: route.action });
         }
-        var words = route.path.split('/');
-        words.forEach(function(word){
-          if(word[0] === ':'){
-            var cleanedWord = word.replace(':', '');
-            api.params.postVariables.push(cleanedWord);
-          }
-        });
         counter++;
       }
     }
@@ -111,13 +102,15 @@ var routes = function(api, next){
     api.params.postVariables = api.utils.arrayUniqueify(api.params.postVariables)
     api.log(counter + ' routes loaded from ' + api.routes.routesFile, 'debug');
 
-    if(api.config.servers.web != null && api.config.servers.web.simpleRouting === true){
+    if(api.config.servers.web && api.config.servers.web.simpleRouting === true){
       var simplePaths = [];
       for(var action in api.actions.actions){
         simplePaths.push('/' + action);
-        ['get', 'post', 'put', 'patch', 'delete'].forEach(function(verb){
+        // api.routes.verbs.forEach(function(verb){
+        for(v in api.routes.verbs){
+          verb = api.routes.verbs[v];
           api.routes.routes[verb].push({ path: '/' + action, action: action });
-        });
+        }
       }
       api.log(simplePaths.length + ' simple routes loaded from action names', 'debug');
 
@@ -125,16 +118,7 @@ var routes = function(api, next){
     }
   };
 
-  //depricated, see github issue #450
-  if(fs.existsSync(api.routes.routesFile)){
-    api.routes.loadRoutes();
-    api.watchFileAndAct(api.routes.routesFile, function(){
-      api.routes.loadRoutes();
-    });
-  }else{
-    api.routes.loadRoutes(api.config.routes);
-  }  
-  
+  api.routes.loadRoutes();
   next();
 }
 
