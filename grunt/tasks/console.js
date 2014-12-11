@@ -8,7 +8,7 @@ module.exports = function(grunt) {
 
       // note this REPL will not run _start commands, only the intilizers
       var r = repl.start({
-        prompt: prompt,
+        prompt: '',
         useGlobal: false
       });
 
@@ -32,7 +32,7 @@ module.exports = function(grunt) {
       actionhero.start(function(){
         r.outputStream.write('\r\n\r\n');
         r.outputStream.write('*** REPL READY ***\r\n\r\n');
-        r.outputStream.write(prompt);
+        r.outputStream.write(r.prompt);
       });
 
     }, true);
