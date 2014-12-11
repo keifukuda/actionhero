@@ -59,6 +59,7 @@ var actionProcessor = function(api, next){
     // if(error !== null){
     //   if(typeof error === 'string') self.connection.error = new Error( error );
     //   else self.connection.error = error;
+    // }
 
     if(typeof api.actions.preCompleteAction === 'function') {
       api.actions.preCompleteAction(self, status);
