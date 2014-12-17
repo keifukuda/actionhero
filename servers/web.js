@@ -82,7 +82,13 @@ var web = function(api, options, next){
     if(connection.rawConnection.method !== 'HEAD'){
       stringResponse = String(message);
     }
-    connection.rawConnection.responseHeaders.push(['Content-Length', Buffer.byteLength(stringResponse, 'utf8')]);
+    if ( stringResponse === 'null' ) {
+      contentLength = 0;
+    }
+    else {
+      contentLength = Buffer.byteLength(stringResponse, 'utf8');
+    }
+    connection.rawConnection.responseHeaders.push(['Content-Length', contentLength]);
     cleanHeaders(connection);
     var headers = connection.rawConnection.responseHeaders;
     var responseHttpCode = parseInt(connection.rawConnection.responseHttpCode);
@@ -104,7 +110,7 @@ var web = function(api, options, next){
     connection.rawConnection.responseHeaders.push(['Content-Length', length]);
     if(foundExpires === false)      { connection.rawConnection.responseHeaders.push(['Expires', new Date(new Date().getTime() + api.config.servers.web.flatFileCacheDuration * 1000).toUTCString()]); }
     if(foundCacheControl === false) { connection.rawConnection.responseHeaders.push(['Cache-Control', 'max-age=' + api.config.servers.web.flatFileCacheDuration + ', must-revalidate']); }
-    
+
     cleanHeaders(connection);
     var headers = connection.rawConnection.responseHeaders;
     if(error){ connection.rawConnection.responseHttpCode = 404 }
@@ -236,22 +242,22 @@ var web = function(api, options, next){
         connection.response.requesterInformation = buildRequesterInformation(connection);
       }
 
-      if(connection.response.error !== undefined){
-        if(api.config.servers.web.returnErrorCodes === true && connection.rawConnection.responseHttpCode === 200){
-          if(connection.actionStatus === 'unknown_action'){
-            connection.rawConnection.responseHttpCode = 404;
-          }else if(connection.actionStatus === 'missing_params'){
-            connection.rawConnection.responseHttpCode = 422;
-          }else if(connection.actionStatus === 'server_error'){
-            connection.rawConnection.responseHttpCode = 500;
-          }else{
-            connection.rawConnection.responseHttpCode = 400;
-          }
-        }
-      }
+      // if(connection.response.error !== undefined){
+      //   if(api.config.servers.web.returnErrorCodes === true && connection.rawConnection.responseHttpCode === 200){
+      //     if(connection.actionStatus === 'unknown_action'){
+      //       connection.rawConnection.responseHttpCode = 404;
+      //     }else if(connection.actionStatus === 'missing_params'){
+      //       connection.rawConnection.responseHttpCode = 422;
+      //     }else if(connection.actionStatus === 'server_error'){
+      //       connection.rawConnection.responseHttpCode = 500;
+      //     }else{
+      //       connection.rawConnection.responseHttpCode = 400;
+      //     }
+      //   }
+      // }
 
       if(
-          (connection.response.error === null || connection.response.error === undefined ) &&
+          // (connection.response.error === null || connection.response.error === undefined ) &&
           connection.action &&
           connection.params.apiVersion &&
           api.actions.actions[connection.action][connection.params.apiVersion].matchExtensionMimeType === true &&
@@ -346,13 +352,13 @@ var web = function(api, options, next){
       if(connection.rawConnection.method === 'TRACE'){ requestMode = 'trace'; }
 
       fillParamsFromWebRequest(connection, connection.rawConnection.parsedURL.query);
-      connection.rawConnection.params.query = connection.rawConnection.parsedURL.query;        
+      connection.rawConnection.params.query = connection.rawConnection.parsedURL.query;
       if(
           connection.rawConnection.method !== 'GET' &&
-          connection.rawConnection.method !== 'HEAD' && 
-          ( 
+          connection.rawConnection.method !== 'HEAD' &&
+          (
             connection.rawConnection.req.headers['content-type'] ||
-            connection.rawConnection.req.headers['Content-Type']  
+            connection.rawConnection.req.headers['Content-Type']
           )
       ){
         connection.rawConnection.form = new formidable.IncomingForm();
@@ -400,7 +406,7 @@ var web = function(api, options, next){
     if(collapsedVarsHash !== false){
       varsHash = {payload: collapsedVarsHash} // post was an array, lets call it "payload"
     }
-    
+
     for(var v in varsHash){
       connection.params[v] = varsHash[v];
     }
@@ -451,13 +457,13 @@ var web = function(api, options, next){
           server.log('removed stale unix socket @ ' + port);
         }
       });
-    } 
+    }
   }
 
   var chmodSocket = function(bindIP, port){
-    if(!options.bindIP && options.port.indexOf('/') >= 0){ 
-      fs.chmodSync(port, 0777); 
-    } 
+    if(!options.bindIP && options.port.indexOf('/') >= 0){
+      fs.chmodSync(port, 0777);
+    }
   }
 
   next(server);
