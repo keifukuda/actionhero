@@ -80,7 +80,7 @@ var actionProcessor = function(api, next){
       self.connection._originalConnection.action = self.connection.action;
       self.connection._originalConnection.actionStatus = status;
       self.connection._originalConnection.error = self.connection.error;
-      self.connection._originalConnection.response = self.connection.response || {};
+      self.connection._originalConnection.response = self.connection.response;
 
       if(typeof self.callback === 'function'){
         self.callback(self.connection._originalConnection, toRender, self.messageCount);
