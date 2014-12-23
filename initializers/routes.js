@@ -36,10 +36,10 @@ var routes = function(api, next){
     var matchParts = match.split('/');
     var regexp = '';
     var variable = '';
-    
+
     if(matchParts[0] === ''){ matchParts.splice(0, 1) }
     if(matchParts[(matchParts.length - 1)] === ''){ matchParts.pop() }
-    
+
     if(matchParts.length !== pathParts.length){
       return response;
     }
@@ -53,8 +53,9 @@ var routes = function(api, next){
         response.params[variable] = pathParts[i];
       } else if(part[0] === ':' && part.indexOf('(') >= 0){
         variable = part.replace(':', '').split('(')[0];
-        regexp = part.split('(')[1];
-        var matches = pathParts[i].match(new RegExp(regexp.substring(0, regexp.length - 1), 'g'));
+        // regexp = part.split('(')[1];
+        regexp = part.match(/\(.*\)$/)[0];
+        var matches = pathParts[i].match(new RegExp(regexp.substring(1, regexp.length - 1), 'g'));
         if(matches){
           response.params[variable] = pathParts[i];
         } else {
