@@ -1,4 +1,4 @@
-#!/usr/local/bin/node --harmony
+#!/usr/bin/env node
 
 require('coffee-script/register');
 var cluster = require('cluster');

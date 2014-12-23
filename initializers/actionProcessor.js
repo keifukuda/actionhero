@@ -44,6 +44,9 @@ var actionProcessor = function(api, next){
     if(actionDomain){ actionDomain.exit(); }
     var error = null
 
+    if(typeof api.actions.preCompleteAction === 'function') {
+      api.actions.preCompleteAction(self, status);
+    }
     // if(status === 'server_shutting_down'){
     //   error = api.config.errors.serverShuttingDown();
     // }else if(status === 'too_many_requests'){
@@ -60,10 +63,6 @@ var actionProcessor = function(api, next){
     //   if(typeof error === 'string') self.connection.error = new Error( error );
     //   else self.connection.error = error;
     // }
-
-    if(typeof api.actions.preCompleteAction === 'function') {
-      api.actions.preCompleteAction(self, status);
-    }
     if(self.connection.error instanceof Error){
       self.connection.error = String(self.connection.error);
     }
@@ -80,7 +79,7 @@ var actionProcessor = function(api, next){
       self.connection._originalConnection.action = self.connection.action;
       self.connection._originalConnection.actionStatus = status;
       self.connection._originalConnection.error = self.connection.error;
-      self.connection._originalConnection.response = self.connection.response;
+      self.connection._originalConnection.response = self.connection.response || {};
 
       if(typeof self.callback === 'function'){
         self.callback(self.connection._originalConnection, toRender, self.messageCount);
@@ -107,7 +106,14 @@ var actionProcessor = function(api, next){
       }
     }
 
+    if (self.connection.me) {
+      user = self.connection.me.get('username');
+    } else {
+      user = null
+    }
+
     api.log('[ action @ ' + self.connection.type + ' ]', logLevel, {
+      user: user,
       to: self.connection.remoteIP,
       action: self.connection.action,
       params: JSON.stringify(filteredParams),

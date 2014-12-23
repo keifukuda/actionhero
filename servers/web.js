@@ -82,12 +82,7 @@ var web = function(api, options, next){
     if(connection.rawConnection.method !== 'HEAD'){
       stringResponse = String(message);
     }
-    if ( stringResponse === 'null' ) {
-      contentLength = 0;
-    }
-    else {
-      contentLength = Buffer.byteLength(stringResponse, 'utf8');
-    }
+    stringResponse === '{}' ? contentLength = 0 : contentLength = Buffer.byteLength(stringResponse, 'utf8');
     connection.rawConnection.responseHeaders.push(['Content-Length', contentLength]);
     cleanHeaders(connection);
     var headers = connection.rawConnection.responseHeaders;
@@ -242,22 +237,22 @@ var web = function(api, options, next){
         connection.response.requesterInformation = buildRequesterInformation(connection);
       }
 
-      // if(connection.response.error !== undefined){
-      //   if(api.config.servers.web.returnErrorCodes === true && connection.rawConnection.responseHttpCode === 200){
-      //     if(connection.actionStatus === 'unknown_action'){
-      //       connection.rawConnection.responseHttpCode = 404;
-      //     }else if(connection.actionStatus === 'missing_params'){
-      //       connection.rawConnection.responseHttpCode = 422;
-      //     }else if(connection.actionStatus === 'server_error'){
-      //       connection.rawConnection.responseHttpCode = 500;
-      //     }else{
-      //       connection.rawConnection.responseHttpCode = 400;
-      //     }
-      //   }
-      // }
+      if(connection.response.error !== undefined){
+        if(api.config.servers.web.returnErrorCodes === true && connection.rawConnection.responseHttpCode === 200){
+          if(connection.actionStatus === 'unknown_action'){
+            connection.rawConnection.responseHttpCode = 404;
+          }else if(connection.actionStatus === 'missing_params'){
+            connection.rawConnection.responseHttpCode = 422;
+          }else if(connection.actionStatus === 'server_error'){
+            connection.rawConnection.responseHttpCode = 500;
+          }else{
+            connection.rawConnection.responseHttpCode = 400;
+          }
+        }
+      }
 
       if(
-          // (connection.response.error === null || connection.response.error === undefined ) &&
+          (connection.response.error === null || connection.response.error === undefined ) &&
           connection.action &&
           connection.params.apiVersion &&
           api.actions.actions[connection.action][connection.params.apiVersion].matchExtensionMimeType === true &&
